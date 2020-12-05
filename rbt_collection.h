@@ -110,7 +110,13 @@ private:
   void remove_rebalance(Node* x, bool going_right);
   
   // height helper
-  size_t height(Node* subtree_root) const;
+  size_t height(const Node* subtree_root) const;
+
+  //add helper
+  Node* add(Node* subtree_root, const K& a_key, const V& a_val);
+
+  //remove helper
+  Node* remove(Node* subtree_root, const K& a_key);
   
   // ------------
   // for testing:
@@ -126,102 +132,162 @@ private:
   void print_tree(std::string indent, Node* subtree_root) const;
 };
 
-
+//______________________________________________________________________________________
 // TODO: Finish the above functions below
+//______________________________________________________________________________________
+
 
 
 template<typename K, typename V>
-typename RBTCollection<K,V>::Node*
-RBTCollection<K,V>::rotate_right(Node* k2){ //simple right rotation
-  Node* k1 = k2->left;
-  k2->left = k1->right;
-  k1->right = k2;
-  return k1; 
+void RBTCollection<K,V>::rotate_right(Node* k2){ //simple right rotation
+    //same code
+    Node* k1 = k2->left;
+    k2->left = k1->right;
+
+    //UPDATE K2->left's parent to K2 if not null
+    if(k2->left != nullptr){
+        k2->left->parent = k2;
+    }
+
+    // UPDATE K1's parent
+    k1->parent = k2->parent;
+
+    // Set K1's new paret to K1 if it exits
+    if(k1->parent != nullptr){
+        if(k1->parent > k1){
+            k1->parent->left = k1;
+        }
+        else{
+            k1->parent->right = k1;
+        }
+    }
+
+    // same code
+    k1->right = k2;
+    k2->parent = k1; 
 };
 
 template<typename K, typename V>
-typename RBTCollection<K,V>::Node*
-RBTCollection<K,V>::rotate_left(Node* k2){ //simple left rotation
-  Node* k1 = k2->right;
-  k2->right = k1->left;
-  k1->left = k2;
-  return k1;
+void RBTCollection<K,V>::rotate_left(Node* k2){ //simple left rotation
+  //same code
+    Node* k1 = k2->right;
+    k2->right = k1->left;
+
+    //UPDATE K2->left's parent to K2 if not null
+    if(k2->right != nullptr){
+        k2->right->parent = k2;
+    }
+
+    // UPDATE K1's parent
+    k1->parent = k2->parent;
+
+    // Set K1's new paret to K1 if it exits
+    if(k1->parent != nullptr){
+        if(k1->parent > k1){
+            k1->parent->left = k1;
+        }
+        else{
+            k1->parent->right = k1;
+        }
+    }
+
+    // same code
+    k1->left = k2;
+    k2->parent = k1; 
 };
 
 template<typename K, typename V>
-typename RBTCollection<K,V>::Node*
-RBTCollection<K,V>::rebalance(Node* subtree_root){
-    if(subtree_root == nullptr){
-      return subtree_root;
-    }
-    Node* lptr = subtree_root->left;
-    Node* rptr = subtree_root->right;
+void RBTCollection<K,V>::add_rebalance(Node* x){
 
-    //left but no right pointer(special case)
-    if(lptr != nullptr && rptr == nullptr && lptr->height >1){
-      if(lptr->right != nullptr && lptr->left == nullptr ){//checking for double rotation
-        subtree_root->left = rotate_left(lptr);
-        lptr = subtree_root->left;
-        lptr->left->height = 1;// updating height
-        lptr->height = lptr->left->height+1;
-      }
-      subtree_root = rotate_right(subtree_root);
-      subtree_root->height = subtree_root->left->height +1; //updating height
-      subtree_root->right->height = 1;// we know that if C is null, be must be null as well to be in this case
-      //subtree_root->right->height = subtree_root->right->right->height +1; // if rptr not null
-      root = subtree_root;
+    Node* p = x->parent;
+
+    // CASE 1: COLOR FLIP (if x is black and both childeren are red)
+    if(x->color == BLACK && x->left != nullptr && x->right != nullptr && x->left->color == RED && x->right->color == RED){
+        x->color = RED;
+        x->left->color = BLACK;
+        x->right->color = BLACK;
     }
-    else if(rptr != nullptr && lptr == nullptr && rptr->height >1 ){//right but no left pointer (special case)
-      if(rptr->left != nullptr && rptr->right == nullptr ){//checking for double rotation
-        subtree_root->right = rotate_right(rptr);
-        rptr = subtree_root->right;
-        rptr->right->height = 1;//updating height
-        rptr->height = rptr->right->height+1;// updating height
-      }
-      subtree_root = rotate_left(subtree_root);
-      subtree_root->height = subtree_root->right->height +1; //updating height
-      subtree_root->left->height = 1;
-      root = subtree_root;
+
+
+    //CASE 2 AND 3: ROTATIONS (if x and parent are Red)
+    if (x->color == RED && p!= nullptr && p->color == RED ){
+        // if P is the root
+        if(p->parent == nullptr){
+            
+        }
     }
-    else if(rptr != nullptr && lptr != nullptr && lptr->height > rptr->height+1){ // left heavy: left right and left left
-      if((lptr->left == nullptr && lptr->right != nullptr) || lptr->right != nullptr && lptr->left != nullptr && lptr->right->height > lptr->left->height ){//checking for double rotation with 2 nodes
-        subtree_root->left = rotate_left(lptr); // left right
-        if(lptr->left != nullptr){ //updating lptr and handling special case of only having right node
-          lptr->height = lptr->left->height+1; // left and maybe right child
-        }
-        else if( lptr->right != nullptr){ // only right child
-          lptr->height = lptr->right->height+1;
-        }
-        else{ // no children
-          lptr->height =1;
-        }
-        lptr = subtree_root->left; // updating lptr
-        lptr->height = lptr->left->height+1;
-      } //left left case
-      subtree_root = rotate_right(subtree_root);
-      subtree_root->height = subtree_root->left->height +1; //updating height
-      subtree_root->right->height = subtree_root->right->right->height +1; // if rptr not null
-    }
-    else if(lptr != nullptr && rptr != nullptr && rptr->height > lptr->height+1){ // right heavy
-      if((rptr->right == nullptr && rptr->left != nullptr) || rptr->left != nullptr && rptr->right != nullptr && rptr->left->height > rptr->right->height ){//checking for double rotation with 2 nodes
-        subtree_root->right = rotate_right(rptr);//right left case
-        if(rptr->right != nullptr){ //right and makybe left
-          rptr->height = rptr->right->height+1;
-        }
-        else if( rptr->left != nullptr){ // only left
-          rptr->height = rptr->left->height+1;
-        }
-        else{ //none
-          rptr->height =1;
-        }
-        rptr = subtree_root->right; // updating rptr
-        rptr->height = rptr->right->height+1;
-      }
-      subtree_root = rotate_left(subtree_root);
-      subtree_root->height = subtree_root->right->height +1; //updating height
-      subtree_root->left->height = subtree_root->left->left->height +1; // if rptr not null
-    }
-    return subtree_root;
+    
+    // if(subtree_root == nullptr){
+    //   //return subtree_root;
+    // }
+    // Node* lptr = subtree_root->left;
+    // Node* rptr = subtree_root->right;
+
+    // //left but no right pointer(special case)
+    // if(lptr != nullptr && rptr == nullptr && lptr->height >1){
+    //   if(lptr->right != nullptr && lptr->left == nullptr ){//checking for double rotation
+    //     subtree_root->left = rotate_left(lptr);
+    //     lptr = subtree_root->left;
+    //     lptr->left->height = 1;// updating height
+    //     lptr->height = lptr->left->height+1;
+    //   }
+    //   subtree_root = rotate_right(subtree_root);
+    //   subtree_root->height = subtree_root->left->height +1; //updating height
+    //   subtree_root->right->height = 1;// we know that if C is null, be must be null as well to be in this case
+    //   //subtree_root->right->height = subtree_root->right->right->height +1; // if rptr not null
+    //   root = subtree_root;
+    // }
+    // else if(rptr != nullptr && lptr == nullptr && rptr->height >1 ){//right but no left pointer (special case)
+    //   if(rptr->left != nullptr && rptr->right == nullptr ){//checking for double rotation
+    //     subtree_root->right = rotate_right(rptr);
+    //     rptr = subtree_root->right;
+    //     rptr->right->height = 1;//updating height
+    //     rptr->height = rptr->right->height+1;// updating height
+    //   }
+    //   subtree_root = rotate_left(subtree_root);
+    //   subtree_root->height = subtree_root->right->height +1; //updating height
+    //   subtree_root->left->height = 1;
+    //   root = subtree_root;
+    // }
+    // else if(rptr != nullptr && lptr != nullptr && lptr->height > rptr->height+1){ // left heavy: left right and left left
+    //   if((lptr->left == nullptr && lptr->right != nullptr) || lptr->right != nullptr && lptr->left != nullptr && lptr->right->height > lptr->left->height ){//checking for double rotation with 2 nodes
+    //     subtree_root->left = rotate_left(lptr); // left right
+    //     if(lptr->left != nullptr){ //updating lptr and handling special case of only having right node
+    //       lptr->height = lptr->left->height+1; // left and maybe right child
+    //     }
+    //     else if( lptr->right != nullptr){ // only right child
+    //       lptr->height = lptr->right->height+1;
+    //     }
+    //     else{ // no children
+    //       lptr->height =1;
+    //     }
+    //     lptr = subtree_root->left; // updating lptr
+    //     lptr->height = lptr->left->height+1;
+    //   } //left left case
+    //   subtree_root = rotate_right(subtree_root);
+    //   subtree_root->height = subtree_root->left->height +1; //updating height
+    //   subtree_root->right->height = subtree_root->right->right->height +1; // if rptr not null
+    // }
+    // else if(lptr != nullptr && rptr != nullptr && rptr->height > lptr->height+1){ // right heavy
+    //   if((rptr->right == nullptr && rptr->left != nullptr) || rptr->left != nullptr && rptr->right != nullptr && rptr->left->height > rptr->right->height ){//checking for double rotation with 2 nodes
+    //     subtree_root->right = rotate_right(rptr);//right left case
+    //     if(rptr->right != nullptr){ //right and makybe left
+    //       rptr->height = rptr->right->height+1;
+    //     }
+    //     else if( rptr->left != nullptr){ // only left
+    //       rptr->height = rptr->left->height+1;
+    //     }
+    //     else{ //none
+    //       rptr->height =1;
+    //     }
+    //     rptr = subtree_root->right; // updating rptr
+    //     rptr->height = rptr->right->height+1;
+    //   }
+    //   subtree_root = rotate_left(subtree_root);
+    //   subtree_root->height = subtree_root->right->height +1; //updating height
+    //   subtree_root->left->height = subtree_root->left->left->height +1; // if rptr not null
+    // }
+    // //return subtree_root;
 };
 
 
@@ -264,15 +330,66 @@ RBTCollection<K,V>:: add(Node* subtree_root, const K& a_key, const V& a_val){
         }
     }
     // backtracking: rebalance at the subtreee root as needed
-    return rebalance(subtree_root);
-    //return subtree_root;
+    return add_rebalance(subtree_root);
+    return subtree_root;
 
 };
 
 
 template<typename K, typename V>
 void RBTCollection<K,V>:: add(const K& a_key, const V& a_val){
-    root = add(root,a_key, a_val);
+
+    //INTITALIZING NEW NODE TO RED
+    Node* n = new Node;
+    n->left = nullptr;
+    n->right = nullptr;
+    n->parent = nullptr;
+    n->key = a_key; //loading key-value pair
+    n->value = a_val;
+    n->color = RED; // Setting new node to red
+
+    //INITALIZING TRAVERSAL NODE TO ROOT
+    Node* x = root;
+
+    //INTITALISING PARENT OF X TO ROOT
+    Node* p = nullptr;
+
+    //ITERATIVLEY FINDING THE INSERTION POINT AND REBALANCING
+    while(x != nullptr){
+
+        add_rebalance(x); //rebalancing and recoloring
+
+        p = x; //assigning parent of x
+
+        // navitgating down tree
+        if(a_key < x->key){ 
+            x = x->left; 
+        }
+        else{
+            x = x->right;
+        }    
+    }
+
+    // ADDING N
+    if(p == nullptr){
+        root = n;//adding first node
+        n->parent = nullptr;
+    }
+    else if(a_key < p->key){
+        p->left = n;
+        n->parent = p;
+    }
+    else{
+        p->right = n;
+        n->parent = p;
+    }
+    
+    // REBALANCING N
+    add_rebalance(n);
+
+    // MAKE ROOT BLACK
+    root->color = BLACK;
+
     node_count++;
 };
 
@@ -281,13 +398,20 @@ template<typename K, typename V>
 void RBTCollection<K,V>:: remove(const K& a_key){
   if((size() > 0)){ //there are keys in the table
     remove(root,a_key);// recurresive helper to remove node
-    updateheight(root); //helper to make heights correct before rebalancing
-    root = rebalance(root); // rebalancing tree and setting to root
+    //updateheight(root); //helper to make heights correct before rebalancing
+    //root = rebalance(root); // rebalancing tree and setting to root
   }
 };
 
+template<typename K, typename V>
+void RBTCollection<K,V>:: remove_rebalance(Node* x, bool going_right){
 
-emplate<typename K, typename V>
+};
+
+
+
+//remove helper
+template<typename K, typename V>
 typename RBTCollection<K,V>::Node*
 RBTCollection<K,V>::remove(Node* subtree_root, const K& a_key){
 if(size() >0){
@@ -404,6 +528,13 @@ if(size() >0){
 };
 
 
+
+//________________________________________________________________________________
+// done functions
+//________________________________________________________________________________
+
+
+
 template<typename K, typename V>
 size_t RBTCollection<K,V>::height(const Node* subtree_root)const{
   size_t h =1;
@@ -426,10 +557,6 @@ size_t RBTCollection<K,V>::height(const Node* subtree_root)const{
   }
     return h;
 };
-
-// ---------------------------------------------------------------------
-// done functions
-//______________________________________________________________________
 
 
 template<typename K, typename V>
@@ -572,7 +699,7 @@ if(this != &rhs){ // tree1 != tree1
 template<typename K, typename V>
 size_t RBTCollection<K,V>::height()const{
   if(root != nullptr){
-    return root->height;
+    return height(root);
   }
   return 0;
 

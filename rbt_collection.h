@@ -13,6 +13,7 @@
 #include "string.h"
 #include "collection.h"
 #include "array_list.h"
+#include <algorithm>
 
 
 template<typename K, typename V>
@@ -152,9 +153,9 @@ void RBTCollection<K,V>::rotate_right(Node* k2){ //simple right rotation
     // UPDATE K1's parent
     k1->parent = k2->parent;
 
-    // Set K1's new paret to K1 if it exits
+    // Set K1's new parent to K1 if it exits
     if(k1->parent != nullptr){
-        if(k1->parent > k1){
+        if(k1->parent->key > k1->key){
             k1->parent->left = k1;
         }
         else{
@@ -164,7 +165,12 @@ void RBTCollection<K,V>::rotate_right(Node* k2){ //simple right rotation
 
     // same code
     k1->right = k2;
-    k2->parent = k1; 
+    k2->parent = k1;
+
+    //UPDATE ROOT
+    if(root == k2){
+        root = k1;
+    }
 };
 
 template<typename K, typename V>
@@ -183,7 +189,7 @@ void RBTCollection<K,V>::rotate_left(Node* k2){ //simple left rotation
 
     // Set K1's new paret to K1 if it exits
     if(k1->parent != nullptr){
-        if(k1->parent > k1){
+        if(k1->parent->key > k1->key){
             k1->parent->left = k1;
         }
         else{
@@ -193,7 +199,12 @@ void RBTCollection<K,V>::rotate_left(Node* k2){ //simple left rotation
 
     // same code
     k1->left = k2;
-    k2->parent = k1; 
+    k2->parent = k1;
+
+    //UPDATE ROOT
+    if(root == k2){
+        root = k1;
+    } 
 };
 
 template<typename K, typename V>
@@ -211,9 +222,46 @@ void RBTCollection<K,V>::add_rebalance(Node* x){
 
     //CASE 2 AND 3: ROTATIONS (if x and parent are Red)
     if (x->color == RED && p!= nullptr && p->color == RED ){
-        // if P is the root
+        // if P is the root(special case)
         if(p->parent == nullptr){
-            
+            // handling if x is the right child
+            if(p->right != nullptr && p->right == x){
+                rotate_left(p);
+                root = x;
+            }// handling if x is the left child
+            else if (p->left != nullptr && p->left == x){
+                rotate_right(p);
+                root = x;
+            }
+        } // if X has a grand parent (Normal case)
+        else if( p->parent != nullptr){
+            //CASE 2,3: DOUBLE ROTATION
+
+            // LEFT SIDE OF GRANDPARENT
+            if(p->parent->left == p){ 
+                //INSIDE NODE: DOUBLE ROTATION
+                if(p->right == x){
+                    rotate_left(p);
+                    x = p;
+                }
+                //CASE 2: OUTSIDE NODE: Single Rotation
+                rotate_right(x->parent->parent);
+                x->parent->color = BLACK; //recoloring
+                x->parent->right->color = RED;
+            }
+
+            // RIGHT SIDE OF GRANDPARENT
+            else if(p->parent->right == p){ 
+                //INSIDE NODE: DOUBLE ROTATION
+                if(p->left == x){
+                    rotate_right(p);
+                    x = p;
+                }
+                //CASE 2: OUTSIDE NODE: Single Rotation
+                rotate_left(x->parent->parent);
+                x->parent->color = BLACK; //recoloring
+                x->parent->left->color = RED;
+            }
         }
     }
     
@@ -396,16 +444,123 @@ void RBTCollection<K,V>:: add(const K& a_key, const V& a_val){
 
 template<typename K, typename V>
 void RBTCollection<K,V>:: remove(const K& a_key){
-  if((size() > 0)){ //there are keys in the table
-    remove(root,a_key);// recurresive helper to remove node
-    //updateheight(root); //helper to make heights correct before rebalancing
-    //root = rebalance(root); // rebalancing tree and setting to root
-  }
+    if(size() > 0 && root != nullptr){ //there are keys in the table
+
+        //INTITALIZING SENTINEL NODE
+        Node* sentinel = new Node;
+        sentinel->left = nullptr;
+        sentinel->right = root;
+        root->parent = sentinel;
+        sentinel->parent = nullptr; 
+        sentinel->color = RED; // Setting new node to red
+
+        //INITALIZING TRAVERSAL NODE TO ROOT
+        Node* x = root;
+
+        //INTITALISING PARENT OF X TO ROOT
+        Node* p = sentinel;
+
+        bool found = false; // boolean indicating found
+
+        //ITERATIVLEY FINDING THE REMOVAL NODE AND REBALANCING
+        while(x != nullptr && found == false){
+
+            // navitgating down tree
+            if(a_key < x->key){ // GO LEFT
+                remove_rebalance(x,false);
+                x = x->left; 
+            }
+            else if(a_key > x->key){ // GO RIGHT
+                remove_rebalance(x,true);
+                x = x->right;
+            }   
+            else{ //AT REMOVING
+                remove_rebalance(x, x->left);
+                found = true;// makes sure this else executes befor exiting
+            }
+            p = x->parent; //updating paretn
+        } 
+
+        //CHECK IF NODE WAS FOUND
+        if(found == false){
+            return;
+        }
+
+        // DELETION CASES
+        if(x->right == nullptr){
+            //NO CHILDREM
+            if(x->left == nullptr){
+                if(p->left == x){ // X left child of P
+                    p->left = x->left;
+                }
+                else{ // X right child of P
+                    p->right = x->left;
+                }
+                delete x;
+                node_count--;
+            }
+            else{//ONE LEFT CHILD OF X
+                if(p->left == x){ // X left child of P
+                    p->left = x->left;
+                }
+                else{ // X right child of P
+                    p->right = x->left;
+                }
+                x->left->parent = p;
+                delete x;
+                node_count--;
+            }
+        }
+        else{
+            if(x->left == nullptr){// ONE RIGHT CHILD
+                if(p->left == x){ // X left child of P
+                    p->left = x->right;
+                }
+                else{ // X right child of P
+                    p->right = x->right;
+                }
+                x->right->parent = p;
+                delete x;
+                node_count--;
+            }
+            else{//TWO CHILDREN
+                Node* s = x->right;
+                remove_rebalance(s, false);
+                while(s->left != nullptr){
+                    s = s->left;
+                    remove_rebalance(s, false);
+                }
+
+                //FINDING INDORDER SUCCESSOR
+                x->key = s->key;
+                x->value = s->value;
+                if(s != x->right){ // regular case
+                    s->parent->left = s->right;
+                }
+                else{// special case(did not move)
+                    s->parent->right = s->right;
+                }
+                if(s->right != nullptr){
+                    s->right->parent = s->parent;
+                }
+                delete s;
+                node_count--;
+            }
+        }
+
+        //CLEAN UP
+        root = sentinel->right;
+        if(root != nullptr){
+            root->color = BLACK;
+            root->parent = nullptr;
+        }
+        delete sentinel;
+    }
 };
 
 template<typename K, typename V>
 void RBTCollection<K,V>:: remove_rebalance(Node* x, bool going_right){
-
+    
 };
 
 
@@ -540,22 +695,24 @@ size_t RBTCollection<K,V>::height(const Node* subtree_root)const{
   size_t h =1;
   if(subtree_root->right != nullptr){ //checking right path
     if(subtree_root->left != nullptr){// two paths
-      h = 1 + height(subtree_root->left);
-      h = 1 + height(subtree_root->right);
+        h = 1 + height(subtree_root->left);
+        if(h < 1+ height(subtree_root->right)){
+            h = 1 + height(subtree_root->right);
+        }
     }
     else{ //one path to the right
-      h = 1 + height(subtree_root->right);
+        h = 1 + height(subtree_root->right);
     }
   }
   else{//one path to the left
-    if(subtree_root->left != nullptr){
-      h = 1 + height(subtree_root->left);
+        if(subtree_root->left != nullptr){
+        h = 1 + height(subtree_root->left);
+        }
+        else{ // left and right are nullptr so we are at leaf node
+        return h;
+        }
     }
-    else{ // left and right are nullptr so we are at leaf node
-      return h;
-    }
-  }
-    return h;
+        return h;
 };
 
 

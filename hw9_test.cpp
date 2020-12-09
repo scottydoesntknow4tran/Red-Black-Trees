@@ -343,6 +343,186 @@ TEST(BasicListTest, RemoveRebalanceChecksLeftCases) {
 //
 //----------------------------------------------------------------------
 
+// Test 11// checks right cases for remove rebalancing
+TEST(BasicListTest, RemoveRebalanceChecksRightCases) {
+  // case 3: "outside"
+  RBTCollection<string,int> c1;
+  c1.add("c", 20);
+  c1.add("b", 10);
+  c1.add("d", 30);
+  c1.add("a", 40);
+  ASSERT_EQ(4, c1.size());
+  ASSERT_EQ(3, c1.height());
+  c1.remove("d");
+  ASSERT_EQ(3, c1.size());
+  ASSERT_EQ(2, c1.height());
+  ASSERT_EQ(true, c1.valid_rbt());
+  // case 4: "inside"
+  RBTCollection<string,int> c2;
+  c2.add("c", 20);
+  c2.add("d", 10);
+  c2.add("b", 40);
+  c2.add("a", 30);
+  ASSERT_EQ(4, c2.size());
+  ASSERT_EQ(3, c2.height());
+  c2.remove("d");
+  ASSERT_EQ(3, c2.size());
+  ASSERT_EQ(2, c2.height());
+  ASSERT_EQ(true, c2.valid_rbt());
+  // case 1: red child not along path
+  RBTCollection<string,int> c3;
+  c3.add("e", 30);
+  c3.add("f", 20);
+  c3.add("c", 50);
+  c3.add("g", 10);
+  c3.add("d", 40);
+  c3.add("b", 60);
+  c3.add("a", 70);
+  ASSERT_EQ(7, c3.size());
+  ASSERT_EQ(4, c3.height());
+  c3.remove("f");
+  ASSERT_EQ(6, c3.size());
+  ASSERT_EQ(3, c3.height());
+  ASSERT_EQ(true, c3.valid_rbt());
+  // case 2: color flip
+  RBTCollection<string,int> c4;
+  for (int i = 0; i <= 17; ++i) {
+    string s = "";
+    s += (char)(114 - i);
+    c4.add(s, i+10);
+  }
+  ASSERT_EQ(18, c4.size());
+  ASSERT_EQ(6, c4.height());
+  c4.remove("r");
+  ASSERT_EQ(17, c4.size());
+  ASSERT_EQ(6, c4.height());  
+  ASSERT_EQ(true, c4.valid_rbt());  
+}
+
+// Test 12: Checking add rebalance right cases
+TEST(RBTCollectionTest, AddRebalanceCheckRightCases) {
+  RBTCollection<string,int> c1;
+  c1.add("f", 10);
+  c1.add("g", 15);
+  c1.add("h", 20);
+  ASSERT_EQ(2, c1.height());
+  c1.add("i", 25);
+  c1.add("j", 30);
+  ASSERT_EQ(3, c1.height());  
+  c1.add("k", 40);
+  ASSERT_EQ(4, c1.height());    
+  c1.add("m", 35);
+  ASSERT_EQ(4, c1.height());    
+  c1.add("l", 45);
+  ASSERT_EQ(4, c1.height());
+  ASSERT_EQ(true, c1.valid_rbt());
+}
+
+// Test 13: Test add, remove with repeated rapid add and removal
+TEST(RBTCollectionTest, RapidAddRemove) {
+  RBTCollection<int,int> c;
+  for(int i = 0; i<10; i++){ // testing root
+    ASSERT_EQ(0, c.size());
+    ASSERT_EQ(0, c.height());
+    c.add(1, 50);
+    ASSERT_EQ(1, c.size());
+    ASSERT_EQ(1, c.height());
+    ASSERT_EQ(true, c.valid_rbt());
+    c.remove(1);
+    ASSERT_EQ(0, c.size());
+    ASSERT_EQ(0, c.height());
+    ASSERT_EQ(true, c.valid_rbt());
+  }
+
+  c.add(4,20);
+  c.add(2,30);
+  for(int i = 0; i<10; i++){ // testing repeated add and remove in the left-right rebalance case
+    ASSERT_EQ(2, c.size());
+    ASSERT_EQ(2, c.height());
+    ASSERT_EQ(true, c.valid_rbt());
+    c.add(1, 50);
+    ASSERT_EQ(3, c.size());
+    ASSERT_EQ(2, c.height());
+    ASSERT_EQ(true, c.valid_rbt());
+    c.remove(1);
+    ASSERT_EQ(2, c.size());
+    ASSERT_EQ(2, c.height());
+    ASSERT_EQ(true, c.valid_rbt());
+  }
+}
+
+// Test 14: Testing  find-value, and find-range
+TEST(RBTCollectionTest, FindValRange ) {
+  RBTCollection<int,int> c;
+  c.add(0,20);
+  c.add(4,20);
+  c.add(2,30);
+  c.add(1, 34);
+  c.add(9,20);
+  c.add(3,30);
+  c.add(7, 34);
+  c.add(5,20);
+  c.add(6,30);
+  c.add(8, 34);
+  ArrayList <int> keys1;
+  for(int i = 0; i<10; i++){ // testing the find value and range function
+    ASSERT_EQ(10, c.size());
+    ASSERT_EQ(4, c.height());
+    int val1=0;
+    int val2=0;
+    c.find(0,9,keys1);
+    c.find(i,val2);
+    keys1.get(i,val1);
+    ASSERT_LE(val1, 9);
+    ASSERT_EQ(c.find(i,val2), true);
+  }
+}
+
+//TEST 15: checking valid RBT after many operations to find corner cases
+TEST(RBTCollectionTest, KeysandSortHeight) {
+  RBTCollection<int,int> c;
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(0,20);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(4,20);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(2,30);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(1, 34);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(9,20);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(3,30);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(7, 34);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(5,20);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(6,30);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(8, 34);
+  ASSERT_EQ(true, c.valid_rbt());
+  ArrayList <int> keys1;
+  ArrayList <int> keys2;
+  for(int i = 0; i<10; i++){ 
+    ASSERT_EQ(10, c.size());
+    ASSERT_EQ(true, c.valid_rbt());
+    c.keys(keys1);
+    c.sort(keys2);
+    int val1=0;
+    int val2=0;
+    keys1.get(i,val1);
+    ASSERT_EQ(val1, i);
+    keys2.get(i,val2);
+    ASSERT_EQ(val2, i);
+  }
+  c.remove(7);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.remove(4);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.remove(5);
+  ASSERT_EQ(true, c.valid_rbt());
+}
 
 int main(int argc, char** argv)
 {

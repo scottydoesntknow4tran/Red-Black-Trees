@@ -472,30 +472,8 @@ void RBTCollection<K,V>:: remove_rebalance(Node* x, bool going_right){
             x->parent->color = BLACK;
         }
     }//CASE 2: COLOR FLIP // given X's children are both black// does t have 2 black or null children
-    else if(t != nullptr && t->color == BLACK && (t->left == nullptr && (t->right == nullptr || t->right->color == BLACK) || t->left != nullptr && (t->left->color == BLACK && (t->right == nullptr || t->right->color == BLACK))) ){
-        // if(t->left == nullptr){
-        //     if(t->right == nullptr){//Both T's children are null
-        //         t->color = RED;
-        //         x->color = RED;
-        //         p->color = RED;
-        //     }
-        //     else if(t->right->color == BLACK){ //T's left null, right Black
-        //         t->color = RED;
-        //         x->color = RED;
-        //         p->color = RED;
-        //     }
-        // }
-        // else if(t->left->color == BLACK){
-        //     if(t->right == nullptr){//T's Left Black right null
-        //         t->color = RED;
-        //         x->color = RED;
-        //         p->color = RED;
-        //     }
-        //     else if(t->right->color == BLACK){ //T's left Black, right Black
-        //         t->color = RED;
-        //         x->color = RED;
-        //         p->color = RED;
-        //     }
+    else if(t != nullptr && t->color == BLACK && (t->left == nullptr && (t->right == nullptr || t->right->color == BLACK) ||
+     t->left != nullptr && (t->left->color == BLACK && (t->right == nullptr || t->right->color == BLACK))) ){
         t->color = RED;
         x->color = RED;
         p->color = BLACK;
@@ -526,7 +504,7 @@ void RBTCollection<K,V>:: remove_rebalance(Node* x, bool going_right){
             p->color = BLACK;
             t->color = RED;
             x->color = RED;
-            t->right->color = BLACK;
+            t->left->color = BLACK;
         }
         else{//right-left
             rotate_right(t);
@@ -537,9 +515,6 @@ void RBTCollection<K,V>:: remove_rebalance(Node* x, bool going_right){
             //t->parent = BLACK;
         }
     }
-
-
-
 
 };
 
@@ -741,6 +716,7 @@ void RBTCollection<K,V>::copy (Node* lhs_subtree_root, const Node* rhs_subtree_r
   else {
     lhs_subtree_root->key = rhs_subtree_root->key;
     lhs_subtree_root->value = rhs_subtree_root->value;
+    lhs_subtree_root->color = rhs_subtree_root->color;
     lhs_subtree_root->right = nullptr;
     lhs_subtree_root->left = nullptr;
     if(rhs_subtree_root->right != nullptr){
@@ -757,6 +733,8 @@ void RBTCollection<K,V>::copy (Node* lhs_subtree_root, const Node* rhs_subtree_r
     if(rhs_subtree_root->right != nullptr){
     copy(lhs_subtree_root->right, rhs_subtree_root->right); // traverse right on rhs
     }
+    //back tracking connectparent pointers
+
   }
 };
 

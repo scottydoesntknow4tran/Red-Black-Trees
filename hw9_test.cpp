@@ -434,8 +434,8 @@ TEST(RBTCollectionTest, RapidAddRemove) {
     ASSERT_EQ(true, c.valid_rbt());
   }
 
-  c.add(4,20);
-  c.add(2,30);
+    c.add(4,20);
+    c.add(2,30);
   for(int i = 0; i<10; i++){ // testing repeated add and remove in the left-right rebalance case
     ASSERT_EQ(2, c.size());
     ASSERT_EQ(2, c.height());

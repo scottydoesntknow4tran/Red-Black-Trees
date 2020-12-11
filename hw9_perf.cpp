@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
       double avg2 = find_range(array, size, AVLSEARCHTREE);
       double avg3 = find_range(array, size, RBTSEARCHTREE);
       cout << size << " "
-           << (avg1/1000.0) << " "
+           << (avg1/1000.0) << " " 
            << (avg2/1000.0) << " "
            << (avg3/1000.0) << endl;
     }
@@ -253,27 +253,32 @@ void create_pairs(pair<string,int>* array, size_t n)
   return;
 }
 
-string get_ith_key(size_t i, size_t n)
-{
-  char letter[26];
-  for (size_t i = 65; i <= 90; ++i)
-    letter[i - 65] = i;
-  string* keys = new string[n];      
-  size_t i1 = 0, i2 = 0, i3 = 0, i4 = 0;
-  for (size_t i = 0; i < n; ++i) {
-    if (i1 == 26) {i1 = 0; i2++;}
-    if (i2 == 26) {i2 = 0; i3++;}
-    if (i3 == 26) {i3 = 0; i4++;}
-    string str = "";
-    str += letter[i4];
-    str += letter[i3];
-    str += letter[i2];
-    str += letter[i1];
-    keys[i] = str;
-    ++i1;
-  }
-  return keys[i];
-}
+string get_ith_key(size_t i, size_t n)                                                                                                                                       
+{                                                                                                                                                                            
+  if (n == 0)                                                                                                                                                                
+    return "";                                                                                                                                                               
+  char letter[26];                                                                                                                                                           
+  for (size_t i = 65; i <= 90; ++i)                                                                                                                                          
+    letter[i - 65] = i;                                                                                                                                                      
+  string* keys = new string[n];                                                                                                                                              
+  size_t i1 = 0, i2 = 0, i3 = 0, i4 = 0;                                                                                                                                     
+  for (size_t i = 0; i < n; ++i) {                                                                                                                                           
+    if (i1 == 26) {i1 = 0; i2++;}                                                                                                                                            
+    if (i2 == 26) {i2 = 0; i3++;}                                                                                                                                            
+    if (i3 == 26) {i3 = 0; i4++;}                                                                                                                                            
+    string str = "";                                                                                                                                                         
+    str += letter[i4];                                                                                                                                                       
+    str += letter[i3];                                                                                                                                                       
+    str += letter[i2];                                                                                                                                                       
+    str += letter[i1];                                                                                                                                                       
+    keys[i] = str;                                                                                                                                                           
+    ++i1;                                                                                                                                                                    
+  }                                                                                                                                                                          
+  string r = keys[i];                                                                                                                                                        
+  delete [] keys;                                                                                                                                                            
+  return r;                                                                                                                                                                  
+  // return keys[i];                                                                                                                                                         
+}        
 
 
 void print(const Collection<string,int>& coll)

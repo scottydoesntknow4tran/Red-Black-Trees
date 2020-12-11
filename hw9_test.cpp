@@ -524,6 +524,29 @@ TEST(RBTCollectionTest, KeysandSortHeight) {
   ASSERT_EQ(true, c.valid_rbt());
 }
 
+
+//TEST 15: checking valid RBT after many operations to find corner cases
+TEST(RBTCollectionTest, TESTyd) {
+  RBTCollection<int,int> c;
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(50,20);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(60,20);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(30,30);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(70, 34);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(40,20);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(20,30);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.add(10, 34);
+  ASSERT_EQ(true, c.valid_rbt());
+  c.remove(30);
+  ASSERT_EQ(true, c.valid_rbt());
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

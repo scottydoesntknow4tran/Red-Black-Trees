@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/hw9test",
+            "program": "${workspaceFolder}/hw1test",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

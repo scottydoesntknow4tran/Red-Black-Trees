@@ -182,8 +182,8 @@ void ArrayList<T>::insertion_sort(){
 template<typename T>
 ArrayList<T>::~ArrayList(){
   length = 0;
-  items = nullptr;
   delete [] items;
+  items = nullptr;
 };
 
 template<typename T>
@@ -240,25 +240,25 @@ template<typename T>
 
  template<typename T>
  bool ArrayList<T>:: add(size_t index, const T& item){
-   int a = index-size()+1; // again i use this odd method becuase i found it worked where other methods did not
-   if(a>1) { // check for valid index
+   //int a = index-size()+1; // again i use this odd method becuase i found it worked where other methods did not
+   if(index >= length) { // check for valid index
      return false;
    } 
    if(length == capacity){ // check for resize
      resize();
    }
-   if(a == 1) { //check if adding to end
-     add(item);
-     return true;
-   }
-   else{
+//    if(index == length-1) { //check if adding to end
+//      add(item);
+//      return true;
+//    }
+   //else{
      for(int i=length; i>index ; i--){
         items[i] = items[i-1];//shifting over
      }
      items[index] = item; //inserting item
      length++;
      return true;
-   }
+   //}
  };
 
 template<typename T>

@@ -107,7 +107,7 @@ for(int i=0; i<table_capacity; i++){// iterating through old table to ge all nod
             while(itr!=nullptr){
                 size_t newindex = hash_fun(itr->key)%newcapacity;// finds new index for old node in new table
 
-                Node* ptr = new Node; //creates new node and add it the new table
+                Node* ptr = new Node; //creates new node and adds it to the new table
                 ptr->key = itr->key; // I just realized that splicing this node into the new table could save us from having to delete it at all.
                 ptr->value = itr->value;
                 ptr->next = newtable[newindex];
@@ -130,7 +130,7 @@ for(int i=0; i<table_capacity; i++){// deletes all old nodes (there wouldnt be a
         delete ptr;
     }
 }
-delete hash_table;// deletes old table and sets new table parameters
+delete[] hash_table;// deletes old table and sets new table parameters
 hash_table = newtable; //replacing with new table
 length = newlength;
 table_capacity = newcapacity;
